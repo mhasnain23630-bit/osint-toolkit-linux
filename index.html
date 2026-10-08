@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>hasnain/osint-toolkit-linux — Install OSINT tools on Linux</title>
+<style>
+  :root{
+    --bg:#0a0e13;
+    --bg-2:#0e141b;
+    --panel:#111a23;
+    --panel-2:#16202b;
+    --panel-3:#1b2733;
+    --border:#22303d;
+    --border-2:#2c3d4d;
+    --text:#d7e0ea;
+    --text-2:#93a3b4;
+    --text-3:#6b7c8e;
+    --accent:#2fd4b1;
+    --accent-2:#18a98b;
+    --accent-soft:rgba(47,212,177,.12);
+    --amber:#f0b429;
+    --amber-soft:rgba(240,180,41,.12);
+    --green:#3fb950;
+    --red:#f85149;
+    --violet:#a371f7;
+    --dns:#79c0ff;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --radius:8px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0;background:var(--bg);color:var(--text);
+    font-family:var(--sans);font-size:14px;line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  a{color:var(--dns);text-decoration:none}
+  a:hover{text-decoration:underline}
+  code,kbd{font-family:var(--mono);font-size:12.5px}
+  ::selection{background:var(--accent-soft);color:#fff}
+
+  /* ---------- top nav ---------- */
+  .topnav{
+    background:var(--bg-2);border-bottom:1px solid var(--border);
+    position:sticky;top:0;z-index:50;
+  }
+  .topnav-inner{
+    max-width:1360px;margin:0 auto;padding:10px 20px;
+    display:flex;align-items:center;gap:16px;
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:15px;color:var(--text);letter-spacing:.2px}
+  .brand:hover{text-decoration:none;color:#fff}
+  .mark{
+    width:26px;height:26px;flex:0 0 26px;display:grid;place-items:center;
+    background:linear-gradient(150deg,var(--accent),var(--accent-2));
+    border-radius:7px;color:#04201a;font-weight:800;font-size:14px;
+    box-shadow:0 0 0 1px rgba(47,212,177,.35),0 0 18px -4px rgba(47,212,177,.5);
+  }
+  .mark span{transform:translateY(-.5px)}
+  .topnav-links{display:flex;gap:16px;font-size:13.5px}
+  .topnav-links a{color:var(--text-2);font-weight:500}
+  .topnav-links a:hover{color:var(--text-2);text-decoration:none}
+  .searchbox{
+    margin-left:auto;flex:0 1 300px;position:relative;
+  }
+  .searchbox input{
+    width:100%;background:var(--panel);border:1px solid var(--border);border-radius:6px;
+    color:var(--text);padding:6px 10px 6px 30px;font-size:13px;font-family:var(--sans);
+  }
+  .searchbox input::placeholder{color:var(--text-3)}
+  .searchbox input:focus{outline:none;border-color:var(--accent-2);box-shadow:0 0 0 3px var(--accent-soft)}
+  .searchbox svg{position:absolute;left:9px;top:8px;opacity:.55}
+  .avatar{
+    width:26px;height:26px;border-radius:50%;background:var(--panel-3);
+    border:1px solid var(--border-2);display:grid;place-items:center;
+    font-size:10.5px;font-weight:700;color:var(--accent);letter-spacing:.5px;
+  }
+  .navdivider{width:1px;height:22px;background:var(--border)}
+
+  /* ---------- repo header ---------- */
+  .repohead{background:var(--bg-2);border-bottom:1px solid var(--border);padding:16px 0 0}
+  .wrap{max-width:1360px;margin:0 auto;padding:0 20px}
+  .crumb{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .crumb-path{display:flex;align-items:center;gap:6px;font-size:19px;font-weight:600}
+  .crumb-path a{color:var(--dns)}
+  .crumb-path .sep{color:var(--text-3);font-weight:400}
+  .crumb-path .repo{color:var(--dns);font-weight:700}
+  .badge-pub{
+    border:1px solid var(--border-2);border-radius:20px;padding:1px 9px;
+    font-size:11.5px;color:var(--text-2);font-weight:500;
+  }
+  .repo-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .btn{
+    background:var(--panel-2);border:1px solid var(--border-2);color:var(--text);
+    border-radius:6px;padding:5px 12px;font-size:12.5px;font-weight:600;
+    cursor:pointer;font-family:var(--sans);display:inline-flex;align-items:center;gap:6px;
+    transition:background .12s,border-color .12s;
+  }
+  .btn:hover{background:var(--panel-3);border-color:#3a4c5e}
+  .btn.primary{background:var(--accent);border-color:var(--accent-2);color:#04241e}
+  .btn.primary:hover{background:#3ee0bd}
+  .btn .pill{
+    background:var(--panel-3);border-radius:20px;padding:0 6px;font-size:11px;color:var(--text-2);
+  }
+  .btn.primary .pill{background:rgba(0,0,0,.18);color:#04241e}
+  .count{color:var(--text-3);font-weight:500}
+
+  /* ---------- tabs ---------- */
+  .tabs{display:flex;gap:4px;margin-top:16px;overflow-x:auto;scrollbar-width:none}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{
+    background:transparent;border:1px solid transparent;border-bottom:none;
+    color:var(--text-2);font-size:13.5px;font-weight:500;padding:8px 12px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:7px;border-radius:6px 6px 0 0;
+    font-family:var(--sans);white-space:nowrap;
+  }
+  .tab:hover{color:var(--text);background:var(--panel)}
+  .tab.active{color:var(--text);background:var(--bg);border-color:var(--border);font-weight:600}
+  .tab .cnt{
+    background:var(--panel-3);border-radius:20px;font-size:10.5px;padding:0 6px;color:var(--text-2);
+  }
+
+  /* ---------- code sub-header ---------- */
+  .codehead{
+    background:var(--bg);border-bottom:1px solid var(--border);padding:14px 0;
+  }
+  .codehead-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .branch{
+    background:var(--panel-2);border:1px solid var(--border-2);border-radius:6px;
+    padding:4px 10px;font-family:var(--mono);font-size:12.5px;font-weight:600;
+    display:inline-flex;align-items:center;gap:7px;color:var(--text);
+  }
+  .branch svg{opacity:.75}
+  .pathchip{font-family:var(--mono);font-size:13px;color:var(--text-2)}
+  .pathchip b{color:var(--text);font-weight:600}
+  .codehead .right{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+  /* ---------- layout ---------- */
+  .layout{
+    display:grid;grid-template-columns:268px minmax(0,1fr) 296px;
+    gap:22px;align-items:start;padding:22px 0 60px;
+  }
+  .panel{
+    background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;
+  }
+  .panel-head{
+    padding:9px 14px;border-bottom:1px solid var(--border);background:var(--panel-2);
+    font-size:12px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-2);
+    display:flex;align-items:center;justify-content:space-between;
+  }
+
+  /* ---------- file tree ---------- */
+  .tree{padding:8px 6px;margin:0;list-style:none;font-size:13px}
+  .tree .row{
+    display:flex;align-items:center;gap:7px;padding:4px 8px;border-radius:5px;
+    color:var(--text-2);cursor:pointer;
+  }
+  .tree .row:hover{background:var(--panel-2);color:var(--text)}
+  .tree a.row{text-decoration:none}
+  .tree a.row:hover{text-decoration:none}
+  .tree .row.active{background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .tree .row.active .ico{background:var(--accent)}
+  .tree .ind{display:block;padding-left:16px}
+  .tree .ind2{display:block;padding-left:32px}
+  .ico{
+    width:13px;height:11px;flex:0 0 13px;border-radius:2px;
+    border:1.5px solid var(--text-3);
+  }
+  .ico.dir{background:var(--amber);border-color:var(--amber);opacity:.85}
+  .tree .row .label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .tree .row .stat{margin-left:auto;font-size:11px;color:var(--text-3);font-family:var(--mono)}
+
+  /* ---------- readme ---------- */
+  .readme{padding:26px 32px 40px}
+  .readme h1{
+    font-size:26px;margin:0 0 4px;font-weight:700;letter-spacing:-.3px;
+    border-bottom:1px solid var(--border);padding-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .readme h1 .pub{
+    font-size:11.5px;font-weight:500;color:var(--text-2);border:1px solid var(--border-2);
+    border-radius:20px;padding:1px 9px;vertical-align:middle;
+  }
+  .readme h2{
+    font-size:20px;margin:38px 0 12px;padding-bottom:8px;font-weight:600;
+    border-bottom:1px solid var(--border);scroll-margin-top:80px;
+  }
+  .readme h3{
+    font-size:16.5px;margin:30px 0 8px;font-weight:600;scroll-margin-top:80px;
+    display:flex;align-items:center;gap:9px;flex-wrap:wrap;
+  }
+  .readme h4{font-size:14px;margin:18px 0 6px;color:var(--text-2);text-transform:uppercase;letter-spacing:.6px;font-weight:700}
+  .readme p{margin:12px 0}
+  .readme ul,.readme ol{padding-left:22px;margin:12px 0}
+  .readme li{margin:5px 0}
+  .readme li::marker{color:var(--text-3)}
+  .readme hr{border:none;border-top:1px solid var(--border);margin:30px 0}
+  .readme strong{color:#fff;font-weight:600}
+  .lede{font-size:15px;color:var(--text-2)}
+
+  .chips{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 0}
+  .chip{
+    font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;
+    background:var(--accent-soft);color:var(--accent);border:1px solid rgba(47,212,177,.25);
+    letter-spacing:.2px;
+  }
+  .chip.amber{background:var(--amber-soft);color:var(--amber);border-color:rgba(240,180,41,.25)}
+  .chip.grey{background:var(--panel-3);color:var(--text-2);border-color:var(--border-2)}
+
+  .callout{
+    border:1px solid var(--border-2);border-left:3px solid var(--accent);
+    background:var(--accent-soft);border-radius:0 6px 6px 0;padding:12px 16px;margin:18px 0;
+    font-size:13.5px;color:var(--text-2);
+  }
+  .callout.warn{border-left-color:var(--amber);background:var(--amber-soft)}
+  .callout.danger{border-left-color:var(--red);background:rgba(248,81,73,.09)}
+  .callout .ct{font-weight:700;color:var(--text);display:block;margin-bottom:3px;font-size:13px}
+  .callout p{margin:6px 0}
+  .callout ul{margin:6px 0;padding-left:20px}
+
+  /* ---------- code blocks ---------- */
+  .codeblock{position:relative;margin:12px 0;border:1px solid var(--border);border-radius:6px;background:var(--bg-2)}
+  .codeblock .cb-head{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:6px 12px;border-bottom:1px solid var(--border);background:var(--panel-2);
+    font-family:var(--mono);font-size:11px;color:var(--text-3);letter-spacing:.4px;text-transform:uppercase;
+  }
+  .copy{
+    background:var(--panel-3);border:1px solid var(--border-2);color:var(--text-2);
+    font-size:11px;font-weight:600;font-family:var(--sans);border-radius:5px;
+    padding:3px 9px;cursor:pointer;display:inline-flex;align-items:center;gap:5px;
+  }
+  .copy:hover{background:#243141;color:#fff}
+  .copy.done{color:var(--accent);border-color:var(--accent-2)}
+  pre{
+    margin:0;padding:13px 15px;overflow-x:auto;font-family:var(--mono);
+    font-size:12.5px;line-height:1.65;background:transparent;tab-size:2;
+  }
+  pre code{font-family:var(--mono);font-size:12.5px;color:#c6d2de;white-space:pre}
+  .tok-com{color:#61758a;font-style:italic}
+  .tok-str{color:#a5d6ff}
+  .tok-flag{color:var(--amber)}
+  .tok-kw{color:#ff8b80;font-weight:600}
+  .tok-op{color:var(--dns)}
+  .tok-num{color:var(--violet)}
+  .t-prompt{color:var(--accent);font-weight:700}
+  .t-cmd{color:#ffffff}
+  .t-ok{color:var(--green);font-weight:700}
+  .t-bad{color:var(--red);font-weight:700}
+  .t-info{color:var(--amber);font-weight:700}
+  .t-dim{color:#8fa0b1}
+  .termw{font-family:var(--mono);font-size:12.5px;line-height:1.7}
+  .termw .bar{
+    display:flex;gap:6px;align-items:center;padding:8px 12px;background:#0b1116;
+    border-bottom:1px solid var(--border);
+  }
+  .termw .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .termw .dot.r{background:#ff5f57}
+  .termw .dot.y{background:#febc2e}
+  .termw .dot.g{background:#28c840}
+  .termw .bar .ttl{margin-left:8px;color:var(--text-3);font-size:11.5px}
+  .termw pre{background:#080d12}
+
+  /* ---------- table ---------- */
+  .tw{overflow-x:auto;border:1px solid var(--border);border-radius:6px;margin:14px 0}
+  table{border-collapse:collapse;width:100%;font-size:13px}
+  th,td{padding:9px 13px;text-align:left;border-bottom:1px solid var(--border);vertical-align:top}
+  th{background:var(--panel-2);font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2)}
+  tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:var(--panel-2)}
+  td code{background:var(--panel-3);padding:1px 5px;border-radius:4px;color:var(--accent);font-size:12px}
+
+  /* ---------- toc ---------- */
+  .toc{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:8px;margin:16px 0;
+  }
+  .toc a{
+    display:flex;align-items:center;gap:9px;border:1px solid var(--border);background:var(--panel-2);
+    border-radius:6px;padding:9px 12px;color:var(--text-2);font-size:13px;font-weight:500;
+  }
+  .toc a:hover{border-color:var(--accent-2);background:var(--panel-3);color:var(--text);text-decoration:none}
+  .toc .n{font-family:var(--mono);color:var(--accent);font-size:11.5px;font-weight:700}
+
+  /* ---------- about aside ---------- */
+  aside .panel{margin-bottom:16px}
+  .about{padding:14px 16px}
+  .about .desc{color:var(--text-2);font-size:13px;margin:0 0 12px}
+  .topics{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+  .topic{background:rgba(121,192,255,.12);color:var(--dns);border-radius:20px;padding:2px 10px;font-size:11.5px;font-weight:600}
+  .stats{list-style:none;padding:0;margin:0;font-size:13px;color:var(--text-2);border-top:1px solid var(--border);padding-top:12px}
+  .stats li{display:flex;align-items:center;gap:8px;margin:6px 0}
+  .stats li b{color:var(--text);font-weight:700}
+  .stats .d{width:8px;height:8px;border-radius:50%;background:var(--accent);display:inline-block}
+  .statrow{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:1px solid var(--border);font-size:12.5px;color:var(--text-2)}
+  .statrow:last-child{border-bottom:none}
+  .statrow b{color:var(--text)}
+
+  /* ---------- commit bar / issues ---------- */
+  .commitbar{
+    display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1px solid var(--border);
+    border-radius:6px 6px 0 0;padding:9px 14px;font-size:12.5px;color:var(--text-2);
+    border-bottom:none;flex-wrap:wrap;
+  }
+  .commitbar .av{width:22px;height:22px;border-radius:50%;background:var(--panel-3);border:1px solid var(--border-2);display:grid;place-items:center;font-size:9.5px;font-weight:700;color:var(--accent)}
+  .commitbar .msg{color:var(--text);font-weight:600}
+  .commitbar .hash{font-family:var(--mono);font-size:11.5px;border:1px solid var(--border-2);border-radius:5px;padding:1px 7px;color:var(--text-2)}
+  .commitbar .when{margin-left:auto;color:var(--text-3)}
+  .verified{color:var(--green);display:inline-flex;align-items:center;gap:4px}
+
+  .view{display:none}
+  .view.active{display:block}
+  .issues{padding:8px 0}
+  .issue-row{
+    display:flex;align-items:center;gap:12px;padding:13px 18px;border-bottom:1px solid var(--border);
+  }
+  .issue-row:last-child{border-bottom:none}
+  .issue-row:hover{background:var(--panel-2)}
+  .oi{font-size:11px;font-weight:700;padding:2px 10px;border-radius:20px;border:1px solid;white-space:nowrap}
+  .oi.open{color:var(--green);border-color:rgba(63,185,80,.4);background:rgba(63,185,80,.1)}
+  .oi.pr{color:var(--violet);border-color:rgba(163,113,247,.4);background:rgba(163,113,247,.1)}
+  .issue-row .t{font-weight:600;color:var(--text);font-size:14px}
+  .issue-row .m{color:var(--text-3);font-size:12px;margin-top:2px}
+  .issue-row .grow{flex:1;min-width:0}
+
+  .readme .anchor{color:var(--text-3);font-weight:400;opacity:0;font-size:.8em;margin-left:2px}
+  .readme h3:hover .anchor{opacity:1}
+  .kbd{
+    background:var(--panel-3);border:1px solid var(--border-2);border-radius:4px;
+    padding:1px 6px;font-size:11.5px;font-family:var(--mono);color:var(--text);
+  }
+  footer.site{
+    border-top:1px solid var(--border);padding:26px 20px;text-align:center;color:var(--text-3);font-size:12.5px;background:var(--bg-2);
+  }
+  footer.site a{color:var(--text-2)}
+
+  @media (max-width:1180px){
+    .layout{grid-template-columns:240px minmax(0,1fr)}
+    aside{display:none}
+  }
+  @media (max-width:820px){
+    .layout{grid-template-columns:1fr}
+    .sidebar{display:none}
+    .readme{padding:20px 16px 34px}
+    .topnav-links{display:none}
+    .searchbox{flex:1 1 auto}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP NAV ============ -->
+<nav class="topnav">
+  <div class="topnav-inner">
+    <a class="brand" href="#top">
+      <span class="mark"><span>F</span></span>
+      Forge
+    </a>
+    <div class="topnav-links">
+      <a href="#top">Explore</a>
+      <a href="#tools">Repos</a>
+      <a href="#demo">Labs</a>
+      <a href="#ethics">Docs</a>
+    </div>
+    <div class="searchbox">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4.5" stroke="#93a3b4" stroke-width="1.6"/><path d="M10.2 10.2L14 14" stroke="#93a3b4" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <input type="text" placeholder="Search Forge or jump to..." aria-label="Search" />
+    </div>
+    <div class="navdivider"></div>
+    <div class="avatar">HA</div>
+  </div>
+</nav>
+
+<!-- ============ REPO HEADER ============ -->
+<header class="repohead" id="top">
+  <div class="wrap">
+    <div class="crumb">
+      <div class="crumb-path">
+        <a href="#top">hasnain</a>
+        <span class="sep">/</span>
+        <a class="repo" href="#top">osint-toolkit-linux</a>
+      </div>
+      <span class="badge-pub">Public</span>
+      <div class="repo-actions" style="margin-left:auto">
+        <button class="btn" type="button">Watch <span class="pill">42</span></button>
+        <button class="btn" type="button">Fork <span class="pill">128</span></button>
+        <button class="btn" type="button">Star <span class="pill">1.4k</span></button>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist">
+      <button class="tab active" data-view="view-code" role="tab">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5.5 4L2 8l3.5 4M10.5 4L14 8l-3.5 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Code
+      </button>
+      <button class="tab" data-view="view-issues" role="tab">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="1.6" fill="currentColor"/></svg>
+        Issues <span class="cnt">3</span>
+      </button>
+      <button class="tab" data-view="view-prs" role="tab">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 6v4M12 10V8a2 2 0 00-2-2H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Pull requests <span class="cnt">2</span>
+      </button>
+      <button class="tab" data-view="view-code" role="tab">Actions</button>
+      <button class="tab" data-view="view-code" role="tab">Security</button>
+      <button class="tab" data-view="view-code" role="tab">Insights</button>
+      <button class="tab" data-view="view-code" role="tab">Settings</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ CODE SUB-HEADER ============ -->
+<div class="codehead">
+  <div class="wrap codehead-row">
+    <span class="branch">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><circle cx="4" cy="4" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="4" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="1.5"/><path d="M4 6v4M12 10V8a2 2 0 00-2-2H7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      main
+    </span>
+    <span class="pathchip">osint-toolkit-linux / <b>README.md</b></span>
+    <div class="right">
+      <button class="btn" type="button">Go to file</button>
+      <button class="btn" type="button">Add file</button>
+      <button class="btn primary" type="button">
+        <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M6 3L3 6l3 3M10 3l3 3-3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 6h7a3 3 0 013 3v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        Code <span class="pill">Clone</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MAIN LAYOUT ============ -->
+<div class="wrap">
+  <div class="layout">
+
+    <!-- -------- SIDEBAR : FILE TREE -------- -->
+    <div class="sidebar">
+      <div class="panel">
+        <div class="panel-head"><span>Files</span><span style="color:var(--accent)">main</span></div>
+        <ul class="tree">
+          <li><div class="row"><span class="ico dir"></span><span class="label">.forge</span><span class="stat">2</span></div></li>
+          <li><span class="ind"><div class="row"><span class="ico"></span><span class="label">workflow.yml</span></div></span></li>
+
+          <li><div class="row"><span class="ico dir"></span><span class="label">docs</span><span class="stat">3</span></div></li>
+          <li><span class="ind"><a class="row" href="#ethics"><span class="ico"></span><span class="label">ethics.md</span></a></span></li>
+          <li><span class="ind"><a class="row" href="#workflow"><span class="ico"></span><span class="label">workflow.md</span></a></span></li>
+          <li><span class="ind"><a class="row" href="#troubleshooting"><span class="ico"></span><span class="label">troubleshooting.md</span></a></span></li>
+
+          <li><div class="row"><span class="ico dir"></span><span class="label">scripts</span><span class="stat">1</span></div></li>
+          <li><span class="ind"><a class="row" href="#prereqs"><span class="ico"></span><span class="label">bootstrap.sh</span></a></span></li>
+
+          <li><div class="row"><span class="ico dir"></span><span class="label">tools</span><span class="stat">15</span></div></li>
+          <li><span class="ind2"><a class="row" href="#tool-theharvester"><span class="ico"></span><span class="label">theharvester.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-sherlock"><span class="ico"></span><span class="label">sherlock.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-maltego"><span class="ico"></span><span class="label">maltego.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-reconng"><span class="ico"></span><span class="label">recon-ng.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-spiderfoot"><span class="ico"></span><span class="label">spiderfoot.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-amass"><span class="ico"></span><span class="label">amass.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-exiftool"><span class="ico"></span><span class="label">exiftool.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-shodan"><span class="ico"></span><span class="label">shodan-cli.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-metagoofil"><span class="ico"></span><span class="label">metagoofil.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-photon"><span class="ico"></span><span class="label">photon.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-ghunt"><span class="ico"></span><span class="label">ghunt.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-holehe"><span class="ico"></span><span class="label">holehe.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-sublist3r"><span class="ico"></span><span class="label">sublist3r.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-dnsrecon"><span class="ico"></span><span class="label">dnsrecon.md</span></a></span></li>
+          <li><span class="ind2"><a class="row" href="#tool-whoisdig"><span class="ico"></span><span class="label">whois-dig.md</span></a></span></li>
+
+          <li><a class="row active" href="#readme"><span class="ico"></span><span class="label">README.md</span></a></li>
+          <li><div class="row"><span class="ico"></span><span class="label">LICENSE</span></div></li>
+          <li><div class="row"><span class="ico"></span><span class="label">requirements.txt</span></div></li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- -------- MAIN -------- -->
+    <main>
+      <div class="commitbar">
+        <span class="av">HA</span>
+        <span class="msg">docs: refresh GHunt + holehe sections, add copy buttons</span>
+        <span class="verified">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M13.5 8a5.5 5.5 0 11-2.2-4.4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M6 8l2 2 4-4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          verified
+        </span>
+        <span class="hash">7f3c1a9</span>
+        <span class="when">2 hours ago</span>
+      </div>
+
+      <!-- ---------- VIEW: CODE ---------- -->
+      <section class="view active" id="view-code">
+        <div class="panel" style="border-radius:0 0 8px 8px">
+          <article class="readme" id="readme">
+
+            <h1>osint-toolkit-linux <span class="pub">Public</span></h1>
+            <p class="lede">A field guide to installing and actually using a practical OSINT stack on a Linux box — every command, what it's for, and a live demo. Built while standing up a recon VM.</p>
+            <div class="chips">
+              <span class="chip">osint</span>
+              <span class="chip">recon</span>
+              <span class="chip">linux</span>
+              <span class="chip amber">purple-team</span>
+              <span class="chip grey">kali</span>
+              <span class="chip grey">debian/ubuntu</span>
+            </div>
+
+            <div class="callout danger">
+              <span class="ct">⚠️ Authorized and educational use only</span>
+              <p>Every tool below is a <strong>passive or active reconnaissance</strong> utility. Run it <strong>only</strong> against assets you own, assets you have written authorization to test, or public data you are legally allowed to collect. Passive collection is not automatically legal, and active scanning/harvesting of a third party is unauthorised access under most computer-misuse laws (e.g. CFAA, UK Computer Misuse Act, Pakistan PECA).</p>
+              <p>Run this stack in an <strong>isolated VM</strong> behind a VPN/NAT you control — never from a corporate host or your daily driver.</p>
+            </div>
+
+            <h2 id="toc">Contents</h2>
+            <div class="toc">
+              <a href="#prereqs"><span class="n">00</span> Prerequisites &amp; safe setup</a>
+              <a href="#tools"><span class="n">01</span> The toolset (15 tools)</a>
+              <a href="#workflow"><span class="n">02</span> A real recon workflow</a>
+              <a href="#demo"><span class="n">03</span> Demo: Sherlock + theHarvester</a>
+              <a href="#reference"><span class="n">04</span> Quick reference table</a>
+              <a href="#ethics"><span class="n">05</span> Ethics &amp; legal</a>
+              <a href="#troubleshooting"><span class="n">06</span> Troubleshooting</a>
+            </div>
+
+            <hr />
+
+            <!-- ============ 00 PREREQS ============ -->
+            <h2 id="prereqs">00 · Prerequisites &amp; safe setup</h2>
+            <p>This guide targets <strong>Debian 12 / Ubuntu 22.04+</strong> and <strong>Kali</strong>. On Kali many of these are pre-installed — check with <code>which &lt;tool&gt;</code> before installing again.</p>
+            <p>Install the base toolchain once:</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · base toolchain</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt update &amp;&amp; sudo apt install -y git python3 python3-pip python3-venv pipx golang-go whois dnsutils jq
+pipx ensurepath
+source ~/.bashrc</code></pre>
+            </div>
+            <p><strong>Why <code>pipx</code> instead of <code>pip</code>?</strong> Most OSINT tools ship as Python CLIs. <code>pipx</code> installs each one into its own isolated virtualenv and drops a single executable on your <code>PATH</code> — no dependency conflicts between tools that pin different versions of <code>requests</code>, and no fighting with PEP&nbsp;668's "externally-managed-environment" block on Debian/Ubuntu.</p>
+
+            <h4>Keep the lab isolated</h4>
+            <ul>
+              <li>Use a <strong>dedicated VM or container</strong> — snapshots let you roll back after a tool misbehaves.</li>
+              <li>Route traffic through a <strong>VPN/proxy you control</strong> so scans don't resolve back to your corporate IP.</li>
+              <li>Never paste a <strong>production API key</strong> (Shodan, Hunter, etc.) into a shared lab host.</li>
+            </ul>
+
+            <div class="callout">
+              <span class="ct">Optional: one-shot bootstrap</span>
+              <p>The repo ships <code>scripts/bootstrap.sh</code>, which installs the apt packages, sets up <code>pipx</code>, and creates <code>~/osint/</code> for output. Read it before running it — never pipe a remote script straight into a shell.</p>
+            </div>
+
+            <hr />
+
+            <!-- ============ 01 TOOLS ============ -->
+            <h2 id="tools">01 · The toolset</h2>
+            <p>Fifteen tools, grouped roughly by what stage of recon they serve. Each entry gives you <strong>what it is</strong>, <strong>what it's for</strong>, the exact <strong>install</strong> commands, and a <strong>usage</strong> example.</p>
+
+            <!-- theHarvester -->
+            <h3 id="tool-theharvester">theHarvester <a class="anchor" href="#tool-theharvester">#</a></h3>
+            <div class="chips"><span class="chip">email &amp; host harvesting</span><span class="chip grey">python</span><span class="chip grey">passive</span></div>
+            <p><strong>What it is:</strong> A Python recon tool that aggregates emails, subdomains, hostnames, employee names, open ports and banners from public sources — search engines, certificate transparency, PGP keyservers, Shodan, and more.</p>
+            <p><strong>What it's for:</strong> The classic first pass on an organisation: build the email list (for phishing-simulation scoping or breach exposure checks) and the host list (for attack-surface mapping) without touching the target's own infrastructure.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash"># Kali / Debian repo (preferred on Kali)
+sudo apt install -y theharvester
+
+# Or from source (get the newest data sources)
+git clone https://github.com/laramies/theHarvester.git
+cd theHarvester
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">theHarvester -d example.com -b duckduckgo,bing,crtsh -l 300 -f recon-example
+
+# -d  target domain
+# -b  comma-separated data sources
+# -l  result limit per source
+# -f  write HTML + XML report to this base name</code></pre>
+            </div>
+
+            <!-- Sherlock -->
+            <h3 id="tool-sherlock">Sherlock <a class="anchor" href="#tool-sherlock">#</a></h3>
+            <div class="chips"><span class="chip">username enumeration</span><span class="chip grey">python</span><span class="chip grey">passive</span></div>
+            <p><strong>What it is:</strong> A CLI that hunts a username across 400+ social networks and forums, using each site's own account-lookup, and reports where the handle exists.</p>
+            <p><strong>What it's for:</strong> Turning a single handle into a footprint of accounts. Useful for mapping an attacker's aliases during an incident, or checking how exposed a brand/handle is across platforms. No password guessing — it only checks existence.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash"># Isolated install (recommended)
+pipx install sherlock-project
+
+# Or from source
+git clone https://github.com/sherlock-project/sherlock.git
+cd sherlock
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sherlock demo_analyst
+sherlock --timeout 5 --csv --output results/ demo_analyst alt_handle
+
+# --timeout  seconds to wait per site before giving up
+# --csv      also write a CSV report
+# --output   directory for reports</code></pre>
+            </div>
+
+            <!-- Maltego -->
+            <h3 id="tool-maltego">Maltego <a class="anchor" href="#tool-maltego">#</a></h3>
+            <div class="chips"><span class="chip">link analysis</span><span class="chip grey">GUI · Java</span><span class="chip amber">hybrid</span></div>
+            <p><strong>What it is:</strong> A graphical link-analysis platform. You place "entities" (a domain, email, phone, person) on a graph and run <strong>transforms</strong> that pull in related data and draw the relationships.</p>
+            <p><strong>What it's for:</strong> Making sense of how things connect — "which domains, MX records, emails and names cluster around this org?" The Community Edition is free; commercial transforms are paid.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash"># Debian/Kali package
+sudo apt install -y maltego
+
+# Otherwise download the Linux installer from the vendor site,
+# make it executable and run it:
+chmod +x Maltego*.sh
+./Maltego*.sh</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">maltego            # launch the graph UI (needs a display)
+
+# In the UI:  New Graph -> add a "Domain" entity -> type example.com
+#             right-click -> Run Transform -> "To DNS Name [MX]"
+#             repeat for Email / Person entities to grow the graph</code></pre>
+            </div>
+
+            <!-- Recon-ng -->
+            <h3 id="tool-reconng">Recon-ng <a class="anchor" href="#tool-reconng">#</a></h3>
+            <div class="chips"><span class="chip">recon framework</span><span class="chip grey">python</span><span class="chip amber">hybrid</span></div>
+            <p><strong>What it is:</strong> A Metasploit-style modular framework for web reconnaissance. Everything you collect lands in a local SQLite database, and modules read from and write to that database.</p>
+            <p><strong>What it's for:</strong> Running a structured recon engagement where results from one module feed the next, with a persistent workspace you can export. Think "repeatable methodology", not one-off commands.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y recon-ng
+
+# Or from source
+git clone https://github.com/lanmaster53/recon-ng.git
+cd recon-ng
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r REQUIREMENTS</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">recon-ng
+
+# then, inside the prompt:
+&gt; marketplace search
+&gt; workspaces create acme
+&gt; db insert domains
+&gt; modules load recon/domains-hosts/hackertarget
+&gt; run
+&gt; show hosts</code></pre>
+            </div>
+
+            <!-- SpiderFoot -->
+            <h3 id="tool-spiderfoot">SpiderFoot <a class="anchor" href="#tool-spiderfoot">#</a></h3>
+            <div class="chips"><span class="chip">automated OSINT</span><span class="chip grey">python</span><span class="chip grey">web UI</span></div>
+            <p><strong>What it is:</strong> An automation engine with 200+ modules that correlate domains, IPs, emails, names and leaks into a single scan. Ships with a browser UI and a CLI.</p>
+            <p><strong>What it's for:</strong> "Set it and walk away" recon on a target, surfacing things you didn't know to look for. Good for a baseline exposure scan before a red-team engagement.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y spiderfoot
+
+# Or from source
+git clone https://github.com/smicallef/spiderfoot.git
+cd spiderfoot
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash"># Web UI on localhost only
+python3 sf.py -l 127.0.0.1:5001
+
+# Headless scan of one target
+python3 sf.py -s example.com -m sfp_dnsresolve,sfp_crt -o csv -q</code></pre>
+            </div>
+
+            <!-- Amass -->
+            <h3 id="tool-amass">Amass (OWASP) <a class="anchor" href="#tool-amass">#</a></h3>
+            <div class="chips"><span class="chip">attack surface</span><span class="chip grey">go</span><span class="chip amber">hybrid</span></div>
+            <p><strong>What it is:</strong> The OWASP attack-surface mapping tool, in Go. It does deep subdomain enumeration (passive sources plus DNS brute-force and permutation) and network mapping via ASN lookups.</p>
+            <p><strong>What it's for:</strong> The most thorough subdomain/DNS recon you can get from one CLI. Also useful for discovering which ASNs and CIDR blocks a target actually owns.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y amass
+
+# Or via Go (latest)
+go install -v github.com/owasp-amass/amass/v4/...@master
+
+# Or snap
+sudo snap install amass</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">amass enum -d example.com -o subs.txt
+amass enum -passive -d example.com        # passive sources only
+amass intel -whois -d example.com         # ownership / ASN intel</code></pre>
+            </div>
+
+            <!-- ExifTool -->
+            <h3 id="tool-exiftool">ExifTool <a class="anchor" href="#tool-exiftool">#</a></h3>
+            <div class="chips"><span class="chip">metadata / forensics</span><span class="chip grey">perl</span><span class="chip grey">offline</span></div>
+            <p><strong>What it is:</strong> The reference tool for reading and writing metadata in images, PDFs, Office docs, videos and more — EXIF, GPS, camera serials, author names, software versions, embedded thumbnails.</p>
+            <p><strong>What it's for:</strong> Geolocating a photo from its GPS tags, fingerprinting which camera/phone took it, spotting the software that produced a document, and finding hidden embedded objects. The single highest-yield "one file" OSINT tool.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash"># Debian/Ubuntu/Kali — note the package name
+sudo apt install -y libimage-exiftool-perl
+
+exiftool -ver    # confirm it installed</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">exiftool photo.jpg                                  # dump all metadata
+exiftool -a -gps:all -DateTimeOriginal photo.jpg     # just the location/time
+exiftool -r -csv -ext jpg -ext pdf ./evidence &gt; meta.csv   # batch to CSV
+exiftool -all= copy.jpg                              # strip metadata (sanitise before publishing)</code></pre>
+            </div>
+
+            <!-- Shodan CLI -->
+            <h3 id="tool-shodan">Shodan CLI <a class="anchor" href="#tool-shodan">#</a></h3>
+            <div class="chips"><span class="chip">internet-wide scan</span><span class="chip grey">python</span><span class="chip amber">API key</span></div>
+            <p><strong>What it is:</strong> The command-line client for Shodan — the search engine for internet-connected devices and services. You query Shodan's already-collected banner data rather than scanning the target yourself.</p>
+            <p><strong>What it's for:</strong> Finding exposed services (RDP, databases, ICS, cameras) tied to an org or netblock, checking what your own external footprint looks like, and grabbing host details without touching the host. Requires a free API key.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">pipx install shodan        # or: pip install shodan
+
+shodan init YOUR_API_KEY   # key from account.shodan.io</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">shodan host 8.8.8.8
+shodan search --limit 20 "org:Example Corp port:3389"
+shodan domain example.com
+shodan stats --facets country:10 "product:nginx"</code></pre>
+            </div>
+
+            <!-- Metagoofil -->
+            <h3 id="tool-metagoofil">Metagoofil <a class="anchor" href="#tool-metagoofil">#</a></h3>
+            <div class="chips"><span class="chip">document metadata</span><span class="chip grey">python</span><span class="chip grey">passive</span></div>
+            <p><strong>What it is:</strong> Searches a domain for publicly indexed documents (PDF, DOCX, XLSX, PPTX), downloads them, and extracts metadata — usernames, software versions, internal file paths.</p>
+            <p><strong>What it's for:</strong> Building a people-and-software profile of an org from the documents it publishes. Author names and internal paths leak more than teams expect — a favourite for scoping phishing simulations and password-spray wordlists.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y metagoofil
+
+# Maintained fork (recommended — original is unmaintained)
+git clone https://github.com/opsdisk/metagoofil.git
+cd metagoofil
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">python3 metagoofil.py -d example.com -t pdf,docx,xlsx -n 20 -o out/
+
+# -d  target domain      -t  file types
+# -n  files per type     -o  output directory</code></pre>
+            </div>
+
+            <!-- Photon -->
+            <h3 id="tool-photon">Photon <a class="anchor" href="#tool-photon">#</a></h3>
+            <div class="chips"><span class="chip">crawler</span><span class="chip grey">python</span><span class="chip amber">active</span></div>
+            <p><strong>What it is:</strong> A very fast web crawler written for OSINT — it walks a site and harvests URLs, emails, social handles, API keys, secret-looking strings, and interesting file links (PDFs, JS, backups).</p>
+            <p><strong>What it's for:</strong> Turning a website into structured data. Great for finding parameterised URLs and JS endpoints worth reviewing, and for spotting leaked keys in client-side bundles.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">git clone https://github.com/s0md3v/Photon.git
+cd Photon
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">python3 photon.py -u https://example.com -l 3 -t 20 --output results
+
+# -u  seed URL       -l  crawl depth
+# -t  threads        --output  directory for harvested data</code></pre>
+            </div>
+
+            <!-- GHunt -->
+            <h3 id="tool-ghunt">GHunt <a class="anchor" href="#tool-ghunt">#</a></h3>
+            <div class="chips"><span class="chip">Google account OSINT</span><span class="chip grey">python</span><span class="chip amber">needs auth</span></div>
+            <p><strong>What it is:</strong> Investigates a Google account from an email address — resolving the GAIA ID, public profile name, profile picture, linked public Maps reviews, and whether the account exists.</p>
+            <p><strong>What it's for:</strong> Attribution and account-recovery checks. In an incident you might use it to confirm whether a suspicious Gmail is real and what public footprint it carries. <strong>It uses your own authenticated Google session</strong>, so treat the results as personal data.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">pipx install ghunt
+ghunt login     # authenticate once with your own browser cookies</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">ghunt email target@example.com
+ghunt drive target@example.com    # if the account exposes a public Drive item
+
+# Only ever run this against accounts you are authorised to investigate.</code></pre>
+            </div>
+
+            <!-- holehe -->
+            <h3 id="tool-holehe">holehe <a class="anchor" href="#tool-holehe">#</a></h3>
+            <div class="chips"><span class="chip">email registration</span><span class="chip grey">python</span><span class="chip grey">passive</span></div>
+            <p><strong>What it is:</strong> Checks whether an email address is registered on 120+ websites, using each site's own password-reset / signup existence check. It deliberately does not trigger a recovery email to the target.</p>
+            <p><strong>What it's for:</strong> Measuring where one of your users' emails is exposed — a strong input for credential-stuffing risk assessment (i.e. which third-party sites hold a password for that account).</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">pipx install holehe
+# or
+pip3 install holehe</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">holehe target@example.com
+holehe --only-used target@example.com    # print only positive hits</code></pre>
+            </div>
+
+            <!-- Sublist3r -->
+            <h3 id="tool-sublist3r">Sublist3r <a class="anchor" href="#tool-sublist3r">#</a></h3>
+            <div class="chips"><span class="chip">subdomain enum</span><span class="chip grey">python</span><span class="chip amber">hybrid</span></div>
+            <p><strong>What it is:</strong> A subdomain enumerator that queries multiple search engines and certificate logs, with optional DNS brute-force on top.</p>
+            <p><strong>What it's for:</strong> A fast, low-friction subdomain pass when Amass is overkill. Many practitioners now run Amass as the primary and keep Sublist3r as a quick second opinion.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y sublist3r
+
+# Or from source
+git clone https://github.com/aboul3la/Sublist3r.git
+cd Sublist3r
+python3 -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">python3 sublist3r.py -d example.com -o subs.txt -t 20
+python3 sublist3r.py -d example.com -b -p 80,443    # brute-force + port check</code></pre>
+            </div>
+
+            <!-- dnsrecon -->
+            <h3 id="tool-dnsrecon">dnsrecon <a class="anchor" href="#tool-dnsrecon">#</a></h3>
+            <div class="chips"><span class="chip">DNS enumeration</span><span class="chip grey">python</span><span class="chip amber">active</span></div>
+            <p><strong>What it is:</strong> A DNS enumeration and reconnaissance script — standard record enumeration, zone-transfer attempts, SRV/MX discovery, wildcard detection, and dictionary brute-force.</p>
+            <p><strong>What it's for:</strong> Understanding a domain's DNS posture: is AXFR left open? What internal hostnames leak through records? Which mail and service endpoints exist?</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y dnsrecon
+# or
+pipx install dnsrecon</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">dnsrecon -d example.com -t std          # standard record sweep
+dnsrecon -d example.com -t axfr         # attempt zone transfer
+dnsrecon -d example.com -t brt -D wordlist.txt -j out.json</code></pre>
+            </div>
+
+            <!-- whois / dig -->
+            <h3 id="tool-whoisdig">whois &amp; dig <a class="anchor" href="#tool-whoisdig">#</a></h3>
+            <div class="chips"><span class="chip">registrar &amp; DNS</span><span class="chip grey">apt</span><span class="chip grey">built-in</span></div>
+            <p><strong>What they are:</strong> The two pre-installed classics. <code>whois</code> queries domain/IP registration records; <code>dig</code> queries DNS directly.</p>
+            <p><strong>What they're for:</strong> Everything starts here. Registrar, creation date, name servers, registrant org (redacted on most gTLDs now), then the full DNS picture — A/AAAA/MX/TXT/NS/SOA and zone-transfer attempts.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · install</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">sudo apt install -y whois dnsutils
+# newer Debian/Ubuntu may use: sudo apt install -y bind9-dnsutils</code></pre>
+            </div>
+            <div class="codeblock">
+              <div class="cb-head"><span>bash · usage</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-bash">whois example.com
+dig +short example.com A
+dig +short example.com MX
+dig example.com ANY +noall +answer
+dig axfr @ns1.example.com example.com     # does the zone leak?</code></pre>
+            </div>
+
+            <hr />
+
+            <!-- ============ 02 WORKFLOW ============ -->
+            <h2 id="workflow">02 · A real recon workflow</h2>
+            <p>Tools matter less than order. This is the sequence I'd run against an authorised target — each stage feeds the next:</p>
+            <ol>
+              <li><strong>Registration &amp; DNS baseline</strong> — <code>whois example.com</code>, <code>dig NS/A/MX/TXT</code>, then <code>dnsrecon -t std</code>. You now know the registrar, name servers and mail surface.</li>
+              <li><strong>Subdomain discovery</strong> — <code>amass enum -d example.com</code>, cross-checked with <code>sublist3r</code>. Resolve the list and note anything non-production (dev, staging, vpn, jenkins).</li>
+              <li><strong>Host &amp; service profiling</strong> — feed the host list to <code>theHarvester</code>, then check the external footprint with <code>shodan</code> (no packets to the target).</li>
+              <li><strong>People &amp; email surface</strong> — <code>theHarvester</code> emails, <code>metagoofil</code> document metadata, and <code>holehe</code> to see where your own users' emails are registered.</li>
+              <li><strong>Content &amp; artefacts</strong> — <code>photon</code> the web app, then pull any published files through <code>exiftool</code> for GPS/author leakage.</li>
+              <li><strong>Correlate</strong> — load everything into <code>recon-ng</code> (or <code>spiderfoot</code> for an automated sweep) and map relationships in <code>maltego</code> when a graph tells the story better than a list.</li>
+            </ol>
+            <div class="callout">
+              <span class="ct">Keep the evidence tidy</span>
+              <p>Write every stage to a dated folder (<code>~/osint/2026-10-07-example.com/</code>), keep the raw output next to your notes, and record the exact command and timestamp. If the work ever feeds an investigation or a report, that provenance is the difference between a finding and an anecdote.</p>
+            </div>
+
+            <hr />
+
+            <!-- ============ 03 DEMO ============ -->
+            <h2 id="demo">03 · Demo: two tools in action</h2>
+            <p>Two short sessions. <strong>Output below is simulated</strong> for the write-up — real runs return different sites, counts and timings.</p>
+
+            <h3>Demo A — username footprint with Sherlock</h3>
+            <p>Goal: a single handle appears in a report. Which platforms is it registered on?</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>terminal · sherlock</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-term">$ sherlock --timeout 5 --csv --output results/ demo_analyst
+[*] Checking username demo_analyst on:
+[+] GitHub: https://github.com/demo_analyst
+[+] GitLab: https://gitlab.com/demo_analyst
+[+] DockerHub: https://hub.docker.com/u/demo_analyst
+[+] Reddit: https://www.reddit.com/user/demo_analyst
+[+] DevTo: https://dev.to/demo_analyst
+[+] HackerNews: https://news.ycombinator.com/user?id=demo_analyst
+[+] Keybase: https://keybase.io/demo_analyst
+[-] Twitter: Not Found
+[-] Instagram: Not Found
+[-] TikTok: Not Found
+[*] Saved CSV report to results/demo_analyst.csv
+[*] Finished in 21.6s
+$ head -3 results/demo_analyst.csv
+username,name,url_main,exists
+demo_analyst,GitHub,https://github.com/demo_analyst,Claimed
+demo_analyst,GitLab,https://gitlab.com/demo_analyst,Claimed</code></pre>
+            </div>
+            <p><strong>Reading it:</strong> the handle is a real developer identity on GitHub/GitLab/DockerHub — worth pivoting on (commit emails, linked domains). The absence of Twitter/Instagram tells you where the person <em>isn't</em>, which is just as useful for narrowing a profile.</p>
+
+            <h3>Demo B — domain recon with theHarvester</h3>
+            <p>Goal: harvest hosts and emails for a domain from public sources before touching it.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>terminal · theHarvester</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-term">$ theHarvester -d example.com -b duckduckgo,bing,crtsh -l 300 -f recon-example
+[*] Target: example.com
+[*] Searching 3 sources, limit 300 results each...
+
+[*] Hosts found: 14
+mail.example.com:203.0.113.10
+vpn.example.com:203.0.113.24
+dev.example.com:198.51.100.7
+staging.example.com:198.51.100.19
+jenkins.example.com:198.51.100.42
+api.example.com:203.0.113.55
+...
+[*] Emails found: 6
+j.smith@example.com
+s.rahman@example.com
+info@example.com
+careers@example.com
+[*] IPs found: 9
+[*] Report saved: recon-example.html / recon-example.xml
+$ grep -c "," recon-example.xml
+14</code></pre>
+            </div>
+            <p><strong>Reading it:</strong> <code>dev</code>, <code>staging</code> and <code>jenkins</code> are classic weak points — often less hardened and sometimes reachable from the internet. The email pattern <code>f.lastname@</code> gives you the naming convention for the organisation, and the two named addresses become pivots for further enumeration.</p>
+
+            <h3>Demo C — 30 seconds with ExifTool</h3>
+            <p>A published photo can carry everything you need to locate it.</p>
+            <div class="codeblock">
+              <div class="cb-head"><span>terminal · exiftool</span><button class="copy" type="button">Copy</button></div>
+              <pre><code class="lang-term">$ exiftool -a -FileName -Make -Model -DateTimeOriginal -gps:all leak.jpg
+File Name                        : leak.jpg
+Make                             : Apple
+Camera Model Name                : iPhone 13
+Date/Time Original               : 2025:11:03 14:22:07
+GPS Latitude Ref                 : North
+GPS Latitude                     : 24 deg 51' 36.00"
+GPS Longitude Ref                : East
+GPS Longitude                    : 67 deg 0' 36.00"
+GPS Position                     : 24 deg 51' 36.00" N, 67 deg 0' 36.00" E
+$ echo "$(exiftool -s3 -GPSPosition leak.jpg)" | sed 's/ deg /d /g'
+24d 51&apos; 36.00" N, 67d 0&apos; 36.00" E
+[*] Feed the coordinate pair into any map service to place the photo.</code></pre>
+            </div>
+            <div class="callout warn">
+              <span class="ct">Two lessons from this demo</span>
+              <ul>
+                <li><strong>Publish sanitised images.</strong> <code>exiftool -all= copy.jpg</code> before any photo leaves your machine — GPS tags survive almost every "resize" and "share" workflow.</li>
+                <li><strong>Metadata is double-edged.</strong> The same technique locates your own staff's published photos. It belongs in your OSINT exposure review <em>and</em> in your pre-publish checklist.</li>
+              </ul>
+            </div>
+
+            <hr />
+
+            <!-- ============ 04 REFERENCE ============ -->
+            <h2 id="reference">04 · Quick reference table</h2>
+            <div class="tw">
+              <table>
+                <thead>
+                  <tr><th>Tool</th><th>Category</th><th>Install</th><th>Primary use</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td><code>theHarvester</code></td><td>Harvesting</td><td>apt / git</td><td>Emails, hosts, names from public sources</td></tr>
+                  <tr><td><code>sherlock</code></td><td>Username</td><td>pipx / git</td><td>Handle → accounts across 400+ sites</td></tr>
+                  <tr><td><code>maltego</code></td><td>Link analysis</td><td>apt / installer</td><td>Graph relationships between entities</td></tr>
+                  <tr><td><code>recon-ng</code></td><td>Framework</td><td>apt / git</td><td>Modular recon with a persistent DB</td></tr>
+                  <tr><td><code>spiderfoot</code></td><td>Automation</td><td>apt / git</td><td>Broad automated OSINT sweep</td></tr>
+                  <tr><td><code>amass</code></td><td>Attack surface</td><td>apt / go / snap</td><td>Deep subdomain &amp; ASN enumeration</td></tr>
+                  <tr><td><code>exiftool</code></td><td>Metadata</td><td>apt</td><td>Read/strip file metadata &amp; GPS</td></tr>
+                  <tr><td><code>shodan</code></td><td>Exposure</td><td>pipx / pip</td><td>Query exposed services by org/IP</td></tr>
+                  <tr><td><code>metagoofil</code></td><td>Documents</td><td>apt / git</td><td>Users &amp; software from public docs</td></tr>
+                  <tr><td><code>photon</code></td><td>Crawler</td><td>git</td><td>URLs, keys, emails from a website</td></tr>
+                  <tr><td><code>ghunt</code></td><td>Google OSINT</td><td>pipx</td><td>Google account footprint from email</td></tr>
+                  <tr><td><code>holehe</code></td><td>Email</td><td>pipx / pip</td><td>Where an email is registered</td></tr>
+                  <tr><td><code>sublist3r</code></td><td>Subdomains</td><td>apt / git</td><td>Quick subdomain enumeration</td></tr>
+                  <tr><td><code>dnsrecon</code></td><td>DNS</td><td>apt / pipx</td><td>Records, AXFR, brute-force</td></tr>
+                  <tr><td><code>whois / dig</code></td><td>Baseline</td><td>apt</td><td>Registration + DNS lookups</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <hr />
+
+            <!-- ============ 05 ETHICS ============ -->
+            <h2 id="ethics">05 · Ethics &amp; legal</h2>
+            <div class="callout danger">
+              <span class="ct">Read this before you run anything</span>
+              <ul>
+                <li><strong>Authorisation first.</strong> Written scope, signed, naming the domains/IPs and the date window. "It's public data" is not a legal defence by itself.</li>
+                <li><strong>Passive ≠ legal.</strong> Aggregating someone else's data can still breach privacy law (GDPR/PDPB) or a site's terms.</li>
+                <li><strong>Personal data is radioactive.</strong> Handles, emails, GPS and profile data belong in a controlled store with a retention limit — and out of shared chat.</li>
+                <li><strong>Infrastructure hygiene.</strong> Isolate tooling, rate-limit active requests, and never leave a scanner pointed at a third party from a corporate IP.</li>
+                <li><strong>Report responsibly.</strong> If you find a real exposure you weren't asked to find, disclose it through the owner's security contact — don't exploit or publicise it.</li>
+              </ul>
+            </div>
+
+            <hr />
+
+            <!-- ============ 06 TROUBLESHOOTING ============ -->
+            <h2 id="troubleshooting">06 · Troubleshooting</h2>
+            <div class="tw">
+              <table>
+                <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+                <tbody>
+                  <tr><td><code>error: externally-managed-environment</code></td><td>PEP 668 protects the system Python on Debian/Ubuntu</td><td>Use <code>pipx install &lt;tool&gt;</code> or a <code>venv</code>, never <code>sudo pip install</code></td></tr>
+                  <tr><td>Tool not found after pipx install</td><td><code>~/.local/bin</code> not on PATH</td><td><code>pipx ensurepath</code> then <code>source ~/.bashrc</code></td></tr>
+                  <tr><td><code>ModuleNotFoundError</code></td><td>Git-cloned tool was run with the system Python</td><td><code>source .venv/bin/activate</code> inside the tool directory first</td></tr>
+                  <tr><td>Amass / Go tool missing</td><td><code>~/go/bin</code> not on PATH</td><td><code>export PATH="$PATH:$(go env GOPATH)/bin"</code></td></tr>
+                  <tr><td>Empty results from a source</td><td>Search-engine API limits or source blocked</td><td>Switch <code>-b</code> sources, add API keys, or retry later</td></tr>
+                  <tr><td>Maltego won't start</td><td>No display or missing Java</td><td>Run on a desktop VM; <code>sudo apt install default-jre</code></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <hr />
+            <p style="color:var(--text-3);font-size:12.5px">
+              <strong style="color:var(--text-2)">License:</strong> MIT for this guide. Each tool keeps its own licence — check upstream before commercial use.
+              <br />
+              <strong style="color:var(--text-2)">Maintainer:</strong> hasnain · last edited 2026-10-07 ·
+              <a href="#readme">README.md</a>
+            </p>
+
+          </article>
+        </div>
+      </section>
+
+      <!-- ---------- VIEW: ISSUES ---------- -->
+      <section class="view" id="view-issues">
+        <div class="panel">
+          <div class="panel-head"><span>Open issues</span><span>3 open</span></div>
+          <div class="issues">
+            <div class="issue-row"><span class="oi open">Open</span><div class="grow"><div class="t">Add Windows / WSL install notes for the Python tools</div><div class="m">#12 · opened 3 days ago by <b>analyst</b> · 2 comments</div></div></div>
+            <div class="issue-row"><span class="oi open">Open</span><div class="grow"><div class="t">Document rate-limiting for active tools (photon, dnsrecon -t brt)</div><div class="m">#9 · opened 1 week ago by <b>hasnain</b> · 0 comments</div></div></div>
+            <div class="issue-row"><span class="oi open">Open</span><div class="grow"><div class="t">Split the 15 tools into per-agent playbooks (mail vs web vs external)</div><div class="m">#7 · opened 2 weeks ago by <b>hasnain</b> · 4 comments</div></div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- VIEW: PULL REQUESTS ---------- -->
+      <section class="view" id="view-prs">
+        <div class="panel">
+          <div class="panel-head"><span>Open pull requests</span><span>2 open</span></div>
+          <div class="issues">
+            <div class="issue-row"><span class="oi pr">Open</span><div class="grow"><div class="t">docs: add copy-to-clipboard buttons to every command block</div><div class="m">#14 · opened 5 hours ago by <b>hasnain</b> · +112 −18</div></div></div>
+            <div class="issue-row"><span class="oi pr">Open</span><div class="grow"><div class="t">docs: replace unmaintained metagoofil reference with opsdisk fork</div><div class="m">#11 · opened 6 days ago by <b>hasnain</b> · +9 −4</div></div></div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- -------- ASIDE : ABOUT -------- -->
+    <aside>
+      <div class="panel">
+        <div class="panel-head"><span>About</span></div>
+        <div class="about">
+          <p class="desc">Practical install + usage notes for a Linux OSINT stack. Authorised testing and education only.</p>
+          <div class="topics">
+            <span class="topic">osint</span><span class="topic">recon</span>
+            <span class="topic">linux</span><span class="topic">infosec</span>
+            <span class="topic">metadata</span><span class="topic">dns</span>
+          </div>
+          <ul class="stats">
+            <li><span class="d"></span> <b>Readme</b></li>
+            <li>MIT license</li>
+            <li>15 tools documented</li>
+            <li><b>1.4k</b> stars · <b>128</b> forks</li>
+            <li>Updated 2 hours ago</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span>Releases</span></div>
+        <div class="statrow"><span>v1.3.0</span><span>GHunt + holehe</span></div>
+        <div class="statrow"><span>v1.2.0</span><span>Amass &amp; dnsrecon</span></div>
+        <div class="statrow"><span>v1.0.0</span><span>First 10 tools</span></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><span>Languages</span></div>
+        <div class="statrow"><span><span class="d" style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:6px"></span>Shell</span><b>58%</b></div>
+        <div class="statrow"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);margin-right:6px"></span>Python</span><b>31%</b></div>
+        <div class="statrow"><span><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--dns);margin-right:6px"></span>Markdown</span><b>11%</b></div>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<footer class="site">
+  <div>A <strong style="color:var(--text-2)">Forge</strong>-styled interface · built as a single-page HTML blog post · no affiliation with any code-host vendor.</div>
+  <div style="margin-top:6px">OSINT tooling is for <strong style="color:var(--text-2)">authorised, lawful security testing and education</strong> only.</div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  /* ---------- escaping ---------- */
+  function esc(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+  }
+
+  /* ---------- bash highlighter (single-pass, safe) ---------- */
+  var BASH_RE = new RegExp(
+    "(#[^\\n]*)" +                                          // 1 comment
+    "|(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*')" +    // 2 string
+    "|(--?[A-Za-z][\\w-]*)" +                                // 3 flag
+    "|(\\|\\||&&|>>|\\||>|<)" +                              // 4 operator
+    "|\\b(sudo|apt|apt-get|pip|pip3|pipx|git|go|snap|npm|cd|mkdir|rm|cp|mv|chmod|nano|vim|cat|echo|export|source|which|python3|python|exiftool|shodan|amass|dnsrecon|theHarvester|sherlock|holehe|ghunt|sf\\.py|sublist3r\\.py|photon\\.py|metagoofil\\.py|recon-ng|maltego|whois|dig|head|grep|sed|install|update|upgrade|clone|init|login|search|stats|host|domain|enum|intel|email|drive|run|modules|load|workspaces|create|marketplace)\\b", // 5 keyword
+    "g"
+  );
+
+  function hlBash(raw) {
+    var out = "", last = 0, m;
+    BASH_RE.lastIndex = 0;
+    while ((m = BASH_RE.exec(raw)) !== null) {
+      out += esc(raw.slice(last, m.index));
+      if (m[1]) out += '<span class="tok-com">' + esc(m[1]) + "</span>";
+      else if (m[2]) out += '<span class="tok-str">' + esc(m[2]) + "</span>";
+      else if (m[3]) out += '<span class="tok-flag">' + esc(m[3]) + "</span>";
+      else if (m[4]) out += '<span class="tok-op">' + esc(m[4]) + "</span>";
+      else if (m[5]) out += '<span class="tok-kw">' + esc(m[5]) + "</span>";
+      last = m.index + m[0].length;
+      if (m[0].length === 0) { BASH_RE.lastIndex++; }
+    }
+    out += esc(raw.slice(last));
+    return out;
+  }
+
+  /* ---------- terminal highlighter ---------- */
+  function hlTerm(raw) {
+    return raw.split("\n").map(function (line) {
+      var m;
+      if ((m = line.match(/^(\$|#)\s?(.*)$/))) {
+        return '<span class="t-prompt">' + esc(m[1]) + "</span> <span class=\"t-cmd\">" + esc(m[2]) + "</span>";
+      }
+      if ((m = line.match(/^(\[\+\])(.*)$/))) {
+        return '<span class="t-ok">' + esc(m[1]) + "</span>" + esc(m[2]);
+      }
+      if ((m = line.match(/^(\[-\])(.*)$/))) {
+        return '<span class="t-bad">' + esc(m[1]) + "</span><span class=\"t-dim\">" + esc(m[2]) + "</span>";
+      }
+      if ((m = line.match(/^(\[\*\])(.*)$/))) {
+        return '<span class="t-info">' + esc(m[1]) + "</span><span class=\"t-dim\">" + esc(m[2]) + "</span>";
+      }
+      return '<span class="t-dim">' + esc(line) + "</span>";
+    }).join("\n");
+  }
+
+  /* ---------- apply ---------- */
+  var blocks = document.querySelectorAll("pre code");
+  for (var i = 0; i < blocks.length; i++) {
+    var el = blocks[i];
+    var raw = el.textContent;
+    if (el.classList.contains("lang-term")) {
+      el.innerHTML = hlTerm(raw);
+    } else {
+      el.innerHTML = hlBash(raw);
+    }
+  }
+
+  /* ---------- copy to clipboard ---------- */
+  function copyText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      try {
+        var ta = document.createElement("textarea");
+        ta.value = text;
+        ta.setAttribute("readonly", "");
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        resolve();
+      } catch (e) { reject(e); }
+    });
+  }
+
+  var btns = document.querySelectorAll(".copy");
+  for (var b = 0; b < btns.length; b++) {
+    btns[b].addEventListener("click", function () {
+      var block = this.closest(".codeblock");
+      var codeEl = block ? block.querySelector("code") : null;
+      if (!codeEl) return;
+      var text = codeEl.textContent;
+      var btn = this;
+      copyText(text).then(function () {
+        var old = btn.textContent;
+        btn.textContent = "Copied";
+        btn.classList.add("done");
+        setTimeout(function () {
+          btn.textContent = old;
+          btn.classList.remove("done");
+        }, 1400);
+      }).catch(function () {
+        btn.textContent = "Press Ctrl+C";
+        setTimeout(function () { btn.textContent = "Copy"; }, 1600);
+      });
+    });
+  }
+
+  /* ---------- tabs ---------- */
+  var tabs = document.querySelectorAll(".tab");
+  var views = document.querySelectorAll(".view");
+  function showTab(btn) {
+    var target = btn.getAttribute("data-view");
+    for (var t = 0; t < tabs.length; t++) tabs[t].classList.remove("active");
+    btn.classList.add("active");
+    for (var v = 0; v < views.length; v++) {
+      views[v].classList.toggle("active", views[v].id === target);
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+  for (var k = 0; k < tabs.length; k++) {
+    tabs[k].addEventListener("click", function () { showTab(this); });
+  }
+
+  /* ---------- sidebar active state on scroll ---------- */
+  var sideLinks = document.querySelectorAll(".tree a.row");
+  for (var s = 0; s < sideLinks.length; s++) {
+    sideLinks[s].addEventListener("click", function () {
+      for (var x = 0; x < sideLinks.length; x++) sideLinks[x].classList.remove("active");
+      this.classList.add("active");
+    });
+  }
+})();
+</script>
+</body>
+</html>
